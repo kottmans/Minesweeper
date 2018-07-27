@@ -7,7 +7,11 @@ from random import randint
 # Define colors
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
+BLUE = (0, 128, 255)
+LIGHT_BLUE = (0, 255, 255)
 GREEN = (0, 255, 0)
+YELLOW = (255, 255, 0)
+ORANGE = (255, 128, 0)
 RED = (255, 0, 0)
 
 # This sets the GRID_WIDTH and GRID_HEIGHT of the grid (i.e. # of cells)
@@ -54,6 +58,7 @@ def main():
     # Create the 2D Grid Array
     grid = generateGridArray()
     setMines(grid)
+    setNumbers(grid)
 
 
     """
@@ -141,7 +146,16 @@ def draw(screen, grid):
             if grid[row][column] == "Mine":
                 color = RED
             elif grid[row][column] == 1:
+                color = BLUE
+            elif grid[row][column] == 2:
+                color = LIGHT_BLUE
+            elif grid[row][column] == 3:
                 color = GREEN
+            elif grid[row][column] == 4:
+                color = YELLOW
+            elif grid[row][column] == 5:
+                color = ORANGE
+                
             pygame.draw.rect(screen,
                              color,
                              [MARGIN + (column * CELL_WIDTH) + (column * MARGIN),       
@@ -169,12 +183,66 @@ def setMines(grid):
             numMines += 1
 
 #--------------------------------------------------------------------------
-# Function: findMines(grid)
+# Function: setNumbers(grid)
 # Purpose: Will assign numbers to cells based on distance from mines
 #          *** Assumes a grid "with mines" as input ***
 #--------------------------------------------------------------------------
-def findMines(grid):
+def setNumbers(grid):
+    
+    # go through each cell in the grid
+    for row in range(GRID_HEIGHT):
+        for column in range(GRID_WIDTH):
+
+            # If the current cell is not a mine
+            if not isMine(grid, row, column):
+                mineCount = 0
+
+                # find the neighboring cells
+                neighborList = getNeighbors(grid, row, column)
+
+                # find number of mines in those cells
+                for neighbor in neighborList:
+                    if isMine(grid,neighbor[0],neighbor[1]):
+                        mineCount += 1
+                
+                grid[row][column] = mineCount
     return
+
+#--------------------------------------------------------------------------
+# Function: isMine(grid, row, column)
+# Purpose: Determines if there is a mine at the given (row, colum)
+#--------------------------------------------------------------------------
+def isMine(grid, row, column):
+    return grid[row][column] == "Mine"
+
+#--------------------------------------------------------------------------
+# Function: getNeighbors(grid, row, column)
+# Purpose: Finds and returns a list of neighboring cells for a given cell
+#--------------------------------------------------------------------------
+def getNeighbors(grid, row, column):
+
+    neighborList = []
+
+    if row != 0: # if it's not in the top row
+        neighborList.append([row-1, column]) # add the cell above
+        if column != 0:
+            neighborList.append([row-1, column-1]) # add upper-left cell
+        if column != GRID_WIDTH-1:
+            neighborList.append([row-1, column+1]) # add upper-right cell
+        
+    if row != GRID_HEIGHT-1: # if it's not in the bottom row
+        neighborList.append([row+1, column]) # add the cell below
+        if column != 0:
+            neighborList.append([row+1, column-1]) # add lower-left cell
+        if column != GRID_WIDTH-1:
+            neighborList.append([row+1, column+1]) # add lower-right cell
+
+    if column != 0:
+        neighborList.append([row, column-1]) # Add cell to left
+    if column != GRID_WIDTH-1:
+        neighborList.append([row, column+1]) # Add cell to right
+
+    return neighborList
 
 """
 ---------------------------------------------------------------------------
