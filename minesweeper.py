@@ -98,6 +98,7 @@ def main():
 
                     # Check the win & lose conditions
                     if grid[row][column] == "Mine":
+                        revealAll(visibleGrid)
                         print("You lose!")
 
                     elif isWinner(grid, visibleGrid):
@@ -362,7 +363,16 @@ def isWinner(grid, visibleGrid):
 
     return True
 
-    
+#--------------------------------------------------------------------------
+# Function: revealAll(visibleGrid)
+# Purpose: Reveals all cells (except flagged) 
+#--------------------------------------------------------------------------
+def revealAll(visibleGrid):
+    for row in range(GRID_HEIGHT):
+        for column in range(GRID_WIDTH):
+            if visibleGrid[row][column] != 2:
+                visibleGrid[row][column] = 1
+
 """
 ---------------------------------------------------------------------------
 """
