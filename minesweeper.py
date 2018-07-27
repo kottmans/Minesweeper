@@ -7,12 +7,6 @@ from random import randint
 # Define colors
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
-BLUE = (0, 128, 255)
-LIGHT_BLUE = (0, 255, 255)
-GREEN = (0, 255, 0)
-YELLOW = (255, 255, 0)
-ORANGE = (255, 128, 0)
-RED = (255, 0, 0)
 
 # This sets the GRID_WIDTH and GRID_HEIGHT of the grid (i.e. # of cells)
 GRID_WIDTH = 20
@@ -33,7 +27,7 @@ SCREEN_SIZE = (SCREEN_SIZE_X, SCREEN_SIZE_Y)
 FPS = 60
 
 # Sets the total number of mines placed on the grid
-TOTAL_MINES = 40
+TOTAL_MINES = 60
 
 """
 #--------------------------------------------------------------------------
@@ -55,8 +49,9 @@ def main():
     pygame.display.set_caption("Minesweeper")
 
 
-    # Create the 2D Grid Array
-    grid = generateGridArray()
+    # Create the 2D Grid Arrays
+    grid = generateGridArray()          # Keeps track of logical value of cells
+    visibleGrid = generateGridArray()   # Keeps track if cell is visible by user
     setMines(grid)
     setNumbers(grid)
 
@@ -82,21 +77,23 @@ def main():
 
             # If the user clicks the mouse
             elif event.type == pygame.MOUSEBUTTONDOWN:
+
                 # Get positional coordinates and convert
                 row, column = getGridCoords()
-                if grid[row][column] == 0:
-                    print(row, column)
-                    grid[row][column] = 1
 
-        # --- Game logic should go here
+                # If the cell clicked is currently "unvisited"
+                if visibleGrid[row][column] == 0:
+                    visibleGrid[row][column] = 1 # reveal clicked tile
+                    
+                    # if the cell is also blank
+                    if isBlank(grid, row, column):
+                        revealTiles(grid, visibleGrid, row, column)
 
-        # --- Drawing code should go here
-        draw(screen, grid)
-     
-        # --- Limit to 60 frames per second
+
+        draw(screen, grid, visibleGrid)
         clock.tick(FPS)
      
-    # Close the window and quit.
+    # Close the window and quit
     pygame.quit()
 
 #--------------------------------------------------------------------------
@@ -134,7 +131,7 @@ def getGridCoords():
 # Function: draw(screen, grid)
 # Purpose: draws the game board
 #--------------------------------------------------------------------------
-def draw(screen, grid):
+def draw(screen, grid, visibleGrid):
     # --- Screen-clearing code goes here
     # Don't put other drawing commands above this, or they will be erased
     screen.fill(BLACK)
@@ -142,28 +139,32 @@ def draw(screen, grid):
     # Draw the game grid
     for row in range(GRID_HEIGHT):
         for column in range(GRID_WIDTH):
-            img = 0
             color = WHITE
-            if grid[row][column] == "Mine":
-                img = pygame.image.load("tiles/Mine.png")
-            elif grid[row][column] == 0:
-                img = pygame.image.load("tiles/visited.png")
-            elif grid[row][column] == 1:
-                img = pygame.image.load("tiles/1.png")
-            elif grid[row][column] == 2:
-                img = pygame.image.load("tiles/2.png")
-            elif grid[row][column] == 3:
-                img = pygame.image.load("tiles/3.png")
-            elif grid[row][column] == 4:
-                img = pygame.image.load("tiles/4.png")
-            elif grid[row][column] == 5:
-                img = pygame.image.load("tiles/5.png")
-            elif grid[row][column] == 6:
-                img = pygame.image.load("tiles/6.png")
-            elif grid[row][column] == 7:
-                img = pygame.image.load("tiles/7.png")
-            elif grid[row][column] == 8:
-                img = pygame.image.load("tiles/8.png")
+            if visibleGrid[row][column] == 0:
+                img = pygame.image.load("tiles/unvisited.png")
+            elif visibleGrid[row][column] == 1:
+                if grid[row][column] == "Mine":
+                    img = pygame.image.load("tiles/mine.png")
+                elif grid[row][column] == 0:
+                    img = pygame.image.load("tiles/visited.png")
+                elif grid[row][column] == 1:
+                    img = pygame.image.load("tiles/1.png")
+                elif grid[row][column] == 2:
+                    img = pygame.image.load("tiles/2.png")
+                elif grid[row][column] == 3:
+                    img = pygame.image.load("tiles/3.png")
+                elif grid[row][column] == 4:
+                    img = pygame.image.load("tiles/4.png")
+                elif grid[row][column] == 5:
+                    img = pygame.image.load("tiles/5.png")
+                elif grid[row][column] == 6:
+                    img = pygame.image.load("tiles/6.png")
+                elif grid[row][column] == 7:
+                    img = pygame.image.load("tiles/7.png")
+                elif grid[row][column] == 8:
+                    img = pygame.image.load("tiles/8.png")
+            else:
+                img = pygame.image.load("tiles/flag.png")
 
             pygame.draw.rect(screen,
                              color,
@@ -173,10 +174,9 @@ def draw(screen, grid):
                                              CELL_HEIGHT])
             
             # Insert tile into game
-            if img != 0:
-                img = pygame.transform.scale(img,(CELL_WIDTH, CELL_HEIGHT))
-                screen.blit(img,(MARGIN + (column * CELL_WIDTH) + (column * MARGIN)
-                                 ,MARGIN + (row * CELL_HEIGHT) + (row * MARGIN)))
+            img = pygame.transform.scale(img,(CELL_WIDTH, CELL_HEIGHT))
+            screen.blit(img,(MARGIN + (column * CELL_WIDTH) + (column * MARGIN)
+                             ,MARGIN + (row * CELL_HEIGHT) + (row * MARGIN)))
             
             
     
@@ -226,11 +226,29 @@ def setNumbers(grid):
     return
 
 #--------------------------------------------------------------------------
+# Function: isBlank(grid, row, column)
+# Purpose: Determines if the given cell is blank
+#--------------------------------------------------------------------------
+def isBlank(grid, row, column):
+    return grid[row][column] == 0
+
+#--------------------------------------------------------------------------
 # Function: isMine(grid, row, column)
-# Purpose: Determines if there is a mine at the given (row, colum)
+# Purpose: Determines if the given cell is a mine
 #--------------------------------------------------------------------------
 def isMine(grid, row, column):
     return grid[row][column] == "Mine"
+
+#--------------------------------------------------------------------------
+# Function: isNumber(grid, row, column)
+# Purpose: Determines if the given cell is a number
+#--------------------------------------------------------------------------
+def isNumber(grid, row, column):
+    cellValue = grid[row][column]
+    if cellValue == "Mine" or cellValue == 0:
+        return False
+    else:
+        return True
 
 #--------------------------------------------------------------------------
 # Function: getNeighbors(grid, row, column)
@@ -261,6 +279,33 @@ def getNeighbors(grid, row, column):
 
     return neighborList
 
+#--------------------------------------------------------------------------
+# Function: revealTiles(grid, visibleGrid, row, column)
+# Purpose: Takes coordinates of a visited blank cell and reveals its
+#          neighboring cells. If any of the neighboring cells are also
+#          blank, it will recursively call this function again. 
+#--------------------------------------------------------------------------
+def revealTiles(grid, visibleGrid, row, column):
+    
+    neighborList = getNeighbors(grid, row, column)
+
+    for neighbor in neighborList:
+        neighbor_row = neighbor[0]
+        neighbor_column = neighbor[1]
+        
+        # if neighbor is a number
+        if isNumber(grid, neighbor_row, neighbor_column):
+            if visibleGrid[neighbor_row][neighbor_column] == 0: # if not visible
+                visibleGrid[neighbor_row][neighbor_column] = 1 # reveal the current tile
+
+        # if neighbor is a blank, recursively call revealTiles()
+        elif isBlank(grid, neighbor_row, neighbor_column):
+            if visibleGrid[neighbor_row][neighbor_column] == 0: # if not visible
+                visibleGrid[neighbor_row][neighbor_column] = 1 # reveal the current tile
+                revealTiles(grid, visibleGrid, neighbor_row, neighbor_column)
+            
+        # if neighbor is a mine, do nothing
+    
 """
 ---------------------------------------------------------------------------
 """
