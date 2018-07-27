@@ -1,4 +1,7 @@
 import pygame
+import tkinter
+from tkinter import messagebox
+
 from random import randint
 
 """
@@ -47,6 +50,10 @@ def main():
     """ ==================  SET UP THE GAME & WINDOW ================== """
     
     pygame.init()
+
+    # hides the tkinter root menu
+    root = tkinter.Tk()
+    root.withdraw()
      
     # Set the width and height of the screen [width, height]
     screen = pygame.display.set_mode(SCREEN_SIZE)
@@ -71,6 +78,9 @@ def main():
      
     """ ====================== MAIN PROGRAM LOOP ====================== """
     done = False
+    lost_game = False
+    won_game = False
+    
     while not done:
         
         """ ----- Main Event Loop ----- """
@@ -99,10 +109,11 @@ def main():
                     # Check the win & lose conditions
                     if grid[row][column] == "Mine":
                         revealAll(visibleGrid)
-                        print("You lose!")
+                        lost_game = True
 
                     elif isWinner(grid, visibleGrid):
-                        print("You win!")
+                        won_game = True
+
 
             # ---------- If the user clicks the right mouse button ----------
             elif event.type == pygame.MOUSEBUTTONDOWN and event.button == RIGHT:
@@ -118,8 +129,29 @@ def main():
                 elif visibleGrid[row][column] == 2:
                     visibleGrid[row][column] = 0
 
-
         draw(screen, grid, visibleGrid)
+
+        # Check win conditions
+        if lost_game == True or won_game == True:
+            if lost_game:
+                message = "You lose! Would you like to reset the game?"
+            else:
+                message = "You win! Would you like to reset the game?"
+
+            # get user response
+            user_response = messagebox.askyesno("Minesweeper",
+                                                message)
+
+            # reset the game or quit
+            if user_response:
+                won_game = False
+                lost_game = False
+                resetGame(grid, visibleGrid)
+                draw(screen, grid, visibleGrid)
+            else:
+                done = True
+
+            
         clock.tick(FPS)
      
     # Close the window and quit
@@ -372,6 +404,19 @@ def revealAll(visibleGrid):
         for column in range(GRID_WIDTH):
             if visibleGrid[row][column] != 2:
                 visibleGrid[row][column] = 1
+
+#--------------------------------------------------------------------------
+# Function: resetGame(grid, visibleGrid)
+# Purpose: Resets the game
+#--------------------------------------------------------------------------
+def resetGame(grid, visibleGrid):
+    for row in range(GRID_HEIGHT):
+        for column in range(GRID_WIDTH):
+            grid[row][column] = 0
+            visibleGrid[row][column] = 0
+
+    setMines(grid)
+    setNumbers(grid)
 
 """
 ---------------------------------------------------------------------------
