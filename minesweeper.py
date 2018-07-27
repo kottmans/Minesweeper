@@ -22,8 +22,8 @@ GRID_HEIGHT = 20
 MARGIN = 2
 
 # This sets the WIDTH and HEIGHT of each grid cell
-CELL_WIDTH = 20
-CELL_HEIGHT = 20
+CELL_WIDTH = 30
+CELL_HEIGHT = 30
 
 SCREEN_SIZE_X = (MARGIN * GRID_WIDTH+1) + (CELL_WIDTH * GRID_WIDTH)
 SCREEN_SIZE_Y = (MARGIN * GRID_HEIGHT+1) + (CELL_HEIGHT * GRID_HEIGHT)
@@ -102,7 +102,7 @@ def main():
 #--------------------------------------------------------------------------
 # Function: generateGridArray()
 # Purpose: Generates a 2D array the size of the game board and assigns
-#          the default value 0 to each cell
+#          a default value 0 to each cell
 #--------------------------------------------------------------------------
 def generateGridArray():
     grid = []
@@ -142,28 +142,45 @@ def draw(screen, grid):
     # Draw the game grid
     for row in range(GRID_HEIGHT):
         for column in range(GRID_WIDTH):
+            img = 0
             color = WHITE
             if grid[row][column] == "Mine":
-                color = RED
+                img = pygame.image.load("tiles/Mine.png")
+            elif grid[row][column] == 0:
+                img = pygame.image.load("tiles/visited.png")
             elif grid[row][column] == 1:
-                color = BLUE
+                img = pygame.image.load("tiles/1.png")
             elif grid[row][column] == 2:
-                color = LIGHT_BLUE
+                img = pygame.image.load("tiles/2.png")
             elif grid[row][column] == 3:
-                color = GREEN
+                img = pygame.image.load("tiles/3.png")
             elif grid[row][column] == 4:
-                color = YELLOW
+                img = pygame.image.load("tiles/4.png")
             elif grid[row][column] == 5:
-                color = ORANGE
-                
+                img = pygame.image.load("tiles/5.png")
+            elif grid[row][column] == 6:
+                img = pygame.image.load("tiles/6.png")
+            elif grid[row][column] == 7:
+                img = pygame.image.load("tiles/7.png")
+            elif grid[row][column] == 8:
+                img = pygame.image.load("tiles/8.png")
+
             pygame.draw.rect(screen,
                              color,
                              [MARGIN + (column * CELL_WIDTH) + (column * MARGIN),       
                                              MARGIN + (row * CELL_HEIGHT) + (row * MARGIN),      
                                              CELL_WIDTH,                                     
                                              CELL_HEIGHT])
+            
+            # Insert tile into game
+            if img != 0:
+                img = pygame.transform.scale(img,(CELL_WIDTH, CELL_HEIGHT))
+                screen.blit(img,(MARGIN + (column * CELL_WIDTH) + (column * MARGIN)
+                                 ,MARGIN + (row * CELL_HEIGHT) + (row * MARGIN)))
+            
+            
     
-    # --- Update the screen with what we've drawn.
+    # --- Update the screen
     pygame.display.flip()
 
 #--------------------------------------------------------------------------
