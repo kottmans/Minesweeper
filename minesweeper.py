@@ -1,4 +1,5 @@
 import pygame
+from random import randint
 
 """
 ---------------------------- DEFINE CONSTANTS -----------------------------
@@ -9,15 +10,26 @@ WHITE = (255, 255, 255)
 GREEN = (0, 255, 0)
 RED = (255, 0, 0)
 
-# This sets the WIDTH and HEIGHT of each grid location
-WIDTH = 20
-HEIGHT = 20
+# This sets the GRID_WIDTH and GRID_HEIGHT of the grid (i.e. # of cells)
+GRID_WIDTH = 20
+GRID_HEIGHT = 20
 
 # This sets the MARGIN between each cell
 MARGIN = 2
 
+# This sets the WIDTH and HEIGHT of each grid cell
+CELL_WIDTH = 20
+CELL_HEIGHT = 20
+
+SCREEN_SIZE_X = (MARGIN * GRID_WIDTH+1) + (CELL_WIDTH * GRID_WIDTH)
+SCREEN_SIZE_Y = (MARGIN * GRID_HEIGHT+1) + (CELL_HEIGHT * GRID_HEIGHT)
+SCREEN_SIZE = (SCREEN_SIZE_X, SCREEN_SIZE_Y)
+
 # Sets Clock Speed
 FPS = 60
+
+# Sets the total number of mines placed on the grid
+TOTAL_MINES = 40
 
 """
 #--------------------------------------------------------------------------
@@ -34,14 +46,14 @@ def main():
     pygame.init()
      
     # Set the width and height of the screen [width, height]
-    size = (442, 442)
-    screen = pygame.display.set_mode(size)
+    screen = pygame.display.set_mode(SCREEN_SIZE)
 
     pygame.display.set_caption("Minesweeper")
 
 
     # Create the 2D Grid Array
     grid = generateGridArray()
+    setMines(grid)
 
 
     """
@@ -67,8 +79,9 @@ def main():
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 # Get positional coordinates and convert
                 row, column = getGridCoords()
-                print(row, column)
-                grid[row][column] = 1
+                if grid[row][column] == 0:
+                    print(row, column)
+                    grid[row][column] = 1
 
         # --- Game logic should go here
 
@@ -90,11 +103,11 @@ def generateGridArray():
     grid = []
 
     # for each row, create a list that will represent an entire row
-    for row in range(20):
+    for row in range(GRID_HEIGHT):
         grid.append([])
 
         # Add the number zero to each cell in the current row
-        for column in range(20):
+        for column in range(GRID_WIDTH):
             grid[row].append(0)
 
     return grid
@@ -107,8 +120,8 @@ def generateGridArray():
 def getGridCoords():
     pos = pygame.mouse.get_pos()
 
-    column = pos[0] // (WIDTH + MARGIN)
-    row = pos[1] // (HEIGHT + MARGIN)
+    column = pos[0] // (CELL_WIDTH + MARGIN)
+    row = pos[1] // (CELL_HEIGHT + MARGIN)
 
     return row, column
 
@@ -122,20 +135,46 @@ def draw(screen, grid):
     screen.fill(BLACK)
     
     # Draw the game grid
-    for row in range(20):
-        for column in range(20):
+    for row in range(GRID_HEIGHT):
+        for column in range(GRID_WIDTH):
             color = WHITE
-            if grid[row][column] == 1:
+            if grid[row][column] == "Mine":
+                color = RED
+            elif grid[row][column] == 1:
                 color = GREEN
             pygame.draw.rect(screen,
                              color,
-                             [MARGIN + (column * WIDTH) + (column * MARGIN),                # x
-                                             MARGIN + (row * HEIGHT) + (row * MARGIN),      # y
-                                             WIDTH,                                         # width
-                                             HEIGHT])                                       # height
+                             [MARGIN + (column * CELL_WIDTH) + (column * MARGIN),       
+                                             MARGIN + (row * CELL_HEIGHT) + (row * MARGIN),      
+                                             CELL_WIDTH,                                     
+                                             CELL_HEIGHT])
     
     # --- Update the screen with what we've drawn.
     pygame.display.flip()
+
+#--------------------------------------------------------------------------
+# Function: setMines(grid)
+# Purpose: Will randomly place mines onto the grid
+#          *** Assumes an empty grid as input ***
+#--------------------------------------------------------------------------
+def setMines(grid):
+
+    numMines = 0
+    while numMines < TOTAL_MINES:
+        rand_row = randint(0, GRID_HEIGHT-1)
+        rand_column = randint(0, GRID_WIDTH-1)
+
+        if grid[rand_row][rand_column] != "Mine":
+            grid[rand_row][rand_column] = "Mine"
+            numMines += 1
+
+#--------------------------------------------------------------------------
+# Function: findMines(grid)
+# Purpose: Will assign numbers to cells based on distance from mines
+#          *** Assumes a grid "with mines" as input ***
+#--------------------------------------------------------------------------
+def findMines(grid):
+    return
 
 """
 ---------------------------------------------------------------------------
