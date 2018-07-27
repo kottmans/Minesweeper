@@ -80,6 +80,9 @@ def main():
     done = False
     lost_game = False
     won_game = False
+
+    wins = 0
+    losses = 0
     
     while not done:
         
@@ -110,9 +113,11 @@ def main():
                     if grid[row][column] == "Mine":
                         revealAll(visibleGrid)
                         lost_game = True
+                        losses += 1
 
                     elif isWinner(grid, visibleGrid):
                         won_game = True
+                        wins += 1
 
 
             # ---------- If the user clicks the right mouse button ----------
@@ -134,9 +139,11 @@ def main():
         # Check win conditions
         if lost_game == True or won_game == True:
             if lost_game:
-                message = "You lose! Would you like to reset the game?"
+                message = "You lose! Would you like to reset the game?\n" + \
+                          "\nWins: " + str(wins) + "\nLosses: " + str(losses)
             else:
-                message = "You win! Would you like to reset the game?"
+                message = "You win! Would you like to reset the game?\n" + \
+                          "\nWins: " + str(wins) + "\nLosses: " + str(losses)
 
             # get user response
             user_response = messagebox.askyesno("Minesweeper",
