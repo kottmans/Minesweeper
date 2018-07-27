@@ -8,6 +8,11 @@ from random import randint
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 
+# Event.Button Mouse codes
+LEFT = 1
+MIDDLE = 2
+RIGHT = 3
+
 # This sets the GRID_WIDTH and GRID_HEIGHT of the grid (i.e. # of cells)
 GRID_WIDTH = 20
 GRID_HEIGHT = 20
@@ -38,9 +43,9 @@ TOTAL_MINES = 60
 # Purpose: Initialize pygame & game window; Runs main game event loop
 #--------------------------------------------------------------------------
 def main():
-    """
-    SET UP THE GAME & WINDOW
-    """
+    
+    """ ==================  SET UP THE GAME & WINDOW ================== """
+    
     pygame.init()
      
     # Set the width and height of the screen [width, height]
@@ -56,27 +61,27 @@ def main():
     setNumbers(grid)
 
 
-    """
-    MAIN PROGRAM LOOP
-    """
     # Loop until the user clicks the close button.
     done = False
      
     # Used to manage how fast the screen updates
     clock = pygame.time.Clock()
      
-    # -------- Main Program Loop -----------
+    """ ====================== MAIN PROGRAM LOOP ====================== """
+    done = False
     while not done:
         
-        # --- Main event loop
-        for event in pygame.event.get(): # Everytime user does something
+        """ ----- Main Event Loop ----- """
+        
+        # Everytime user does something
+        for event in pygame.event.get():
             
-            # If the user clicks close
+            # ---------- If the user clicks close ----------
             if event.type == pygame.QUIT:
                 done = True
 
-            # If the user clicks the mouse
-            elif event.type == pygame.MOUSEBUTTONDOWN:
+            # ---------- If the user clicks the left mouse button ----------
+            elif event.type == pygame.MOUSEBUTTONDOWN and event.button == LEFT:
 
                 # Get positional coordinates and convert
                 row, column = getGridCoords()
@@ -89,12 +94,34 @@ def main():
                     if isBlank(grid, row, column):
                         revealTiles(grid, visibleGrid, row, column)
 
+                    # Check the win & lose conditions
+                    if grid[row][column] == "Mine":
+                        print("You lose!")
+
+                    elif isWinner(grid, visibleGrid):
+                        print("You win!")
+
+            # ---------- If the user clicks the right mouse button ----------
+            elif event.type == pygame.MOUSEBUTTONDOWN and event.button == RIGHT:
+
+                # Get positional coordinates and convert
+                row, column = getGridCoords()
+
+                # if the current cell does not have a flag and is unvisited
+                if visibleGrid[row][column] == 0:
+                    visibleGrid[row][column] = 2 # place a flag
+
+                # if the current cell does have a flag, set it back to unvisited
+                elif visibleGrid[row][column] == 2:
+                    visibleGrid[row][column] = 0
+
 
         draw(screen, grid, visibleGrid)
         clock.tick(FPS)
      
     # Close the window and quit
     pygame.quit()
+    exit()
 
 #--------------------------------------------------------------------------
 # Function: generateGridArray()
@@ -163,7 +190,7 @@ def draw(screen, grid, visibleGrid):
                     img = pygame.image.load("tiles/7.png")
                 elif grid[row][column] == 8:
                     img = pygame.image.load("tiles/8.png")
-            else:
+            elif visibleGrid[row][column] == 2:
                 img = pygame.image.load("tiles/flag.png")
 
             pygame.draw.rect(screen,
@@ -224,6 +251,13 @@ def setNumbers(grid):
                 
                 grid[row][column] = mineCount
     return
+
+#--------------------------------------------------------------------------
+# Function: isRevealed(visibleGrid, row, column)
+# Purpose: Determines if the given cell is visible to the user
+#--------------------------------------------------------------------------
+def isRevealed(visibleGrid, row, column):
+    return visibleGrid[row][column] == 1
 
 #--------------------------------------------------------------------------
 # Function: isBlank(grid, row, column)
@@ -305,6 +339,27 @@ def revealTiles(grid, visibleGrid, row, column):
                 revealTiles(grid, visibleGrid, neighbor_row, neighbor_column)
             
         # if neighbor is a mine, do nothing
+
+
+#--------------------------------------------------------------------------
+# Function: isWinner(grid, visibleGrid)
+# Purpose: Takes coordinates of a visited blank cell and reveals its
+#          neighboring cells. If any of the neighboring cells are also
+#          blank, it will recursively call this function again. 
+#--------------------------------------------------------------------------
+def isWinner(grid, visibleGrid):
+    
+    # go through each cell in the grid
+    for row in range(GRID_HEIGHT):
+        for column in range(GRID_WIDTH):
+
+            # If the current cell is not a mine and is not revealed
+            if not isMine(grid, row, column):
+                if not isRevealed(visibleGrid, row, column):
+                    return False
+
+    return True
+
     
 """
 ---------------------------------------------------------------------------
