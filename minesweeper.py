@@ -51,7 +51,9 @@ def main():
     # Set the width and height of the screen [width, height]
     screen = pygame.display.set_mode(SCREEN_SIZE)
 
+    # Set screen caption & icon
     pygame.display.set_caption("Minesweeper")
+    pygame.display.set_icon(pygame.image.load("tiles/mine.png"))
 
 
     # Create the 2D Grid Arrays
